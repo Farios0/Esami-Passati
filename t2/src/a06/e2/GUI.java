@@ -10,8 +10,10 @@ public class GUI extends JFrame {
     
     private static final long serialVersionUID = -6218820567019985015L;
     private final List<JButton> cells = new ArrayList<>();
+    private final Logics logic;
     
     public GUI(int width) {
+        this.logic = new LogicsImpl(width);
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.setSize(70*width, 70*width);
         
@@ -20,13 +22,27 @@ public class GUI extends JFrame {
         
         ActionListener al = e -> {
             var jb = (JButton)e.getSource();
-        	jb.setText(String.valueOf(cells.indexOf(jb)));
+        	var position = cells.indexOf(jb);
+            jb.setText(logic.hitcell(position));
+            if (logic.isBingo()) {
+                jb.setEnabled(false);
+                cells.get(logic.getPreviousPosition()).setEnabled(false);
+            }
+            if (logic.canClose()) {
+                jb.paintImmediately(getBounds());
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e1) {
+                    e1.printStackTrace();
+                }
+                jb.setText("");
+                cells.get(logic.getPreviousPosition()).setText("");
+            }
         };
                 
         for (int i=0; i<width; i++){
             for (int j=0; j<width; j++){
-            	var pos = new Pair<>(j,i);
-                final JButton jb = new JButton(pos.toString());
+                final JButton jb = new JButton();
                 this.cells.add(jb);
                 jb.addActionListener(al);
                 panel.add(jb);
